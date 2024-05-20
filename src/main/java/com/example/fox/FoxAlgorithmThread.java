@@ -1,6 +1,6 @@
 package com.example.fox;
 
-class FoxAlgorithmThread extends Thread {
+public class FoxAlgorithmThread extends Thread {
     private final int[][] multiplied;
     private final int[][] multiplicator;
     private final int[][] result;
