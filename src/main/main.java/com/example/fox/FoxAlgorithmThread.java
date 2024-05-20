@@ -1,4 +1,4 @@
-package fox;
+package com.example.fox;
 
 class FoxAlgorithmThread extends Thread {
     private final int[][] multiplied;

@@ -1,6 +1,6 @@
-package fox;
+package com.example.fox;
 
-import shared.Matrix;
+import com.example.shared.Matrix;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;

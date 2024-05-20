@@ -1,4 +1,4 @@
-package shared;
+package com.example.shared;
 
 public class Matrix {
     private final int rows;
