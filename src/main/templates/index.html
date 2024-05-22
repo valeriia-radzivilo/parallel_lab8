@@ -14,10 +14,19 @@
 
 
     function Hello() {
+        const link = 'http://127.0.0.1:8080/';
         const [matrices, setMatrices] = React.useState([]);
 
+        class MatrixPayload {
+            constructor(firstMatrix, secondMatrix, threadCount) {
+                this.firstMatrix = firstMatrix;
+                this.secondMatrix = secondMatrix;
+                this.threadCount = threadCount;
+            }
+        }
+
         React.useEffect(() => {
-            fetch('http://127.0.0.1:8080/')
+            fetch(link)
                 .then(response => response.json())
                 .then(data => {
                     setMatrices(data);
@@ -45,6 +54,21 @@
                 <button onClick={
                     () => {
                         console.log("Multiply Matrices")
+                        // send matrices to spring
+                        const payload = new MatrixPayload(matrices[0], matrices[1], 3);
+                        fetch('http://127.0.0.1:8080/multiply', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(payload),
+
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);
+                            });
+
                     }
                 }>Multiply Matrices
                 </button>
