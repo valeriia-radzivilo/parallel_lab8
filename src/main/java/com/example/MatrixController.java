@@ -15,13 +15,19 @@ import java.util.Map;
 @RestController
 public class MatrixController {
 
-    int size = 3;
-    Matrix matrix1 = new Matrix(size, size);
-    Matrix matrix2 = new Matrix(size, size);
-
     @CrossOrigin
     @GetMapping("/")
-    public List<int[][]> showMatrices() {
+    void hello() {
+        System.out.println("Hello");
+    }
+
+
+    @CrossOrigin
+    @GetMapping("/{size}")
+    public List<int[][]> showMatrices(@PathVariable String size) {
+        int s = Integer.parseInt(size);
+        Matrix matrix1 = new Matrix(s, s);
+        Matrix matrix2 = new Matrix(s, s);
         matrix1.generateRandomMatrix();
         matrix2.generateRandomMatrix();
         return Arrays.asList(matrix1.matrix, matrix2.matrix);
@@ -35,7 +41,7 @@ public class MatrixController {
         Matrix firstMatrix = payload.getFirstMatrix();
         Matrix secondMatrix = payload.getSecondMatrix();
         FoxAlgorithm algorithm = new FoxAlgorithm(payload.getThreadCount(), firstMatrix, secondMatrix);
-        return algorithm.algorithm();
+        return algorithm.run(true);
     }
 
     @Setter
@@ -53,9 +59,10 @@ public class MatrixController {
 
         public static MatrixPayload fromMap(Map payload) {
             return new MatrixPayload(
-                    new Matrix((ArrayList<ArrayList<Integer>>) payload.get("firstMatrix")),
-                    new Matrix((ArrayList<ArrayList<Integer>>) payload.get("secondMatrix")),
-                    (Integer) payload.get("threadCount"));
+                    new Matrix((ArrayList) payload.get("firstMatrix")),
+                    new Matrix((ArrayList) payload.get("secondMatrix")),
+                    Integer.parseInt(payload.get("threadCount").toString()));
+
         }
 
     }

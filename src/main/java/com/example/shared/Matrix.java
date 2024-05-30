@@ -22,17 +22,44 @@ public class Matrix implements Serializable {
         this.matrix = matrix;
     }
 
-    public Matrix(ArrayList<ArrayList<Integer>> arrayLists) {
-        this.rows = arrayLists.size();
-        this.columns = arrayLists.get(0).size();
-        this.matrix = new int[columns][rows];
-        for (int i = 0; i < columns; i++) {
-            for (int j = 0; j < rows; j++) {
-                this.matrix[i][j] = arrayLists.get(i).get(j);
+    public Matrix(ArrayList arrayLists) {
+        if (arrayLists.get(0) instanceof ArrayList) {
+            this.rows = arrayLists.size();
+            this.columns = ((ArrayList<?>) arrayLists.get(0)).size();
+            this.matrix = new int[columns][rows];
+            for (int i = 0; i < columns; i++) {
+                for (int j = 0; j < rows; j++) {
+                    final ArrayList<Integer> row = (ArrayList<Integer>) arrayLists.get(i);
+                    this.matrix[i][j] = row.get(j);
+                }
             }
+        } else if (arrayLists.get(0) instanceof Integer) {
+            this.rows = (int) Math.sqrt(arrayLists.size());
+            this.columns = (int) Math.sqrt(arrayLists.size());
+            this.matrix = new int[columns][rows];
+            for (int i = 0; i < columns; i++) {
+                for (int j = 0; j < rows; j++) {
+                    this.matrix[i][j] = (int) arrayLists.get(i * rows + j);
+                }
+            }
+
+        } else {
+            throw new IllegalArgumentException("Invalid input");
         }
+
     }
 
+    public Matrix fromFlatList(ArrayList<Integer> matrix) {
+        int rows = (int) Math.sqrt(matrix.size());
+        int columns = (int) Math.sqrt(matrix.size());
+        int[][] matrixArray = new int[columns][rows];
+        for (int i = 0; i < columns; i++) {
+            for (int j = 0; j < rows; j++) {
+                matrixArray[i][j] = matrix.get(i * rows + j);
+            }
+        }
+        return new Matrix(matrixArray);
+    }
 
     public void print() {
         for (int i = 0; i < this.columns; i++) {
