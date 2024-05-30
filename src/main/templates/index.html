@@ -21,6 +21,8 @@
         const [matrixSize, setMatrixSize] = React.useState(3);
         const [inputMatrices, setInputMatrices] = React.useState([[], []]);
 
+        const [dataSourceInput, setDataSourceInput] = React.useState(false);
+
 
         class MatrixPayload {
             constructor(firstMatrix, secondMatrix, threadCount) {
@@ -53,26 +55,69 @@
             // Update the state variables
             setMatrixSize(size);
             setInputMatrices(matrices);
+            setDataSourceInput(true);
         };
 
         return (
+
             <div>
-                <button onClick={
-                    () => {
-                        fetch('http://localhost:8080/api/matrix/generate')
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log(data);
-                            });
-                    }
-                }>Generate Matrix
+                <button onClick={() => {
+                    fetch('http://127.0.0.1:8080/')
+                        .then(response => response.json())
+                        .then(data => {
+                            setMatrices(data);
+                            setDataSourceInput(false);
+                        })
+                }}>Get Matrices from Java
                 </button>
-                <button onClick={
-                    () => {
-                        console.log("Input Matrix")
-                    }
-                }>Input Matrix
+
+                <button onClick={() => {
+                    setDataSourceInput(true);
+                }}>Manually input Matrices
                 </button>
+                <br></br>
+                {dataSourceInput && <h2>Input Matrices</h2>}
+
+                {dataSourceInput && <form onSubmit={handleFormSubmit}>
+                    <label>
+                        Size:
+                        <input type="number" name="size" min="1" defaultValue={matrixSize}/>
+                    </label>
+                    <br/>
+                    {Array.from({length: 2}, (_, i) => (
+                        <div key={i}>
+                            <h2>Matrix {i + 1}</h2>
+                            {Array.from({length: matrixSize * matrixSize}, (_, j) => (
+                                <label>
+                                    <input key={j} type="number" name={`matrix${i + 1}[]`} required/>
+                                </label>
+                            ))}
+                            <br/>
+                        </div>
+                    ))}
+                    <button type="submit">Submit user input</button>
+                </form>
+                }
+
+
+                {matrices.length > 0 && !dataSourceInput &&
+                    matrices.map((matrix, matrixIndex) => (
+                        <div key={matrixIndex}>
+                            <h2>Matrix {matrixIndex + 1}</h2>
+                            <table>
+                                <tbody>
+                                {matrix.map((row, rowIndex) => (
+                                    <tr key={rowIndex}>
+                                        {row.map((item, itemIndex) => (
+                                            <td key={itemIndex}>{item}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))
+                }
                 <button onClick={
                     () => {
                         console.log("Multiply Matrices")
@@ -97,23 +142,6 @@
                     }
                 }>Multiply Matrices
                 </button>
-                {matrices.map((matrix, index) => (
-                    <div key={index}>
-                        <h2>Matrix {index + 1}</h2>
-                        <table>
-                            <tbody>
-                            {matrix.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {row.map((item, itemIndex) => (
-                                        <td key={itemIndex}>{item}</td>
-                                    ))}
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ))}
-
                 {resultMatrix.length > 0 && (
                     <div>
                         <h2>Result Matrix</h2>
