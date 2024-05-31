@@ -83,7 +83,7 @@ public class Matrix implements Serializable {
     public void generateRandomMatrix() {
         for (int i = 0; i < this.columns; i++) {
             for (int j = 0; j < this.rows; j++) {
-                this.matrix[i][j] = (int) (Math.random() * 10);
+                this.matrix[i][j] = (int) (Math.random() * 10) + 1;
             }
         }
     }

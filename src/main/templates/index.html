@@ -50,11 +50,13 @@
                 .then(data => {
                     setMatrices(data);
                     setDataSourceInput(false);
+                    setResultMatrix([])
                 });
         }, [matrixSize]);
 
         // Function to handle the form submission
         const handleFormSubmit = (event) => {
+            setResultMatrix([])
             event.preventDefault();
 
             // Get the form data
@@ -100,12 +102,14 @@
                         .then(data => {
                             setMatrices(data);
                             setDataSourceInput(false);
+                            setResultMatrix([])
                         })
                 }}>Get Matrices from Java
                 </button>
 
                 <button onClick={() => {
                     setDataSourceInput(true);
+                    setResultMatrix([]);
                 }}>Manually input Matrices
                 </button>
                 <br></br>
@@ -117,6 +121,7 @@
                            onChange={(e) => {
                                console.log(e.target.value);
                                setMatrixSize(e.target.value);
+                               setResultMatrix([])
                            }}/>
                 </label>
                 <br/> <label>
@@ -125,6 +130,7 @@
                        onChange={(e) => {
                            console.log("New thread count : " + e.target.value);
                            setThreadCount(e.target.value);
+                           setResultMatrix([])
                        }}/>
             </label>
                 <br/>
@@ -169,6 +175,7 @@
                 }
                 {!dataSourceInput && <button onClick={
                     () => {
+                        setResultMatrix([])
                         console.log("Multiply Matrices")
 
                         const payload = new MatrixPayload(matrices[0], matrices[1], threadCount.valueOf());
