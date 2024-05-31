@@ -1,14 +1,232 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org" lang="en">
-<head lang="en">
-    <meta charset="UTF-8"/>
-    <title>ReactJS + Spring Data REST</title>
-    <link rel="stylesheet" href="main.css" />
+<html lang="en">
+<head>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>Lab 8 Parallel Web</title>
 </head>
 <body>
-<h2>** Matrix multiplication **</h2>
-<div id="react"></div>
 
-<pre><script type="module" src="built/App.js"></script> </pre>
+<div id="mydiv"></div>
+
+<script type="text/babel">
+
+
+    function Hello() {
+        const link = 'http://127.0.0.1:8080/';
+        const [matrices, setMatrices] = React.useState([]);
+        const [resultMatrix, setResultMatrix] = React.useState([]);
+
+        const [matrixSize, setMatrixSize] = React.useState(3);
+        const [threadCount, setThreadCount] = React.useState(2);
+        const [inputMatrices, setInputMatrices] = React.useState([[], []]);
+
+        const [dataSourceInput, setDataSourceInput] = React.useState(false);
+
+
+        class MatrixPayload {
+            constructor(firstMatrix, secondMatrix, threadCount) {
+                this.firstMatrix = firstMatrix;
+                this.secondMatrix = secondMatrix;
+                this.threadCount = threadCount;
+            }
+        }
+
+        React.useEffect(() => {
+            fetch(link)
+                .then(response => response.json())
+                .then(data => {
+                    setMatrices(data);
+                });
+        }, []);
+
+        React.useEffect(() => {
+            if (dataSourceInput) {
+                return;
+            }
+            fetch('http://127.0.0.1:8080/' + matrixSize)
+                .then(response => response.json())
+                .then(data => {
+                    setMatrices(data);
+                    setDataSourceInput(false);
+                    setResultMatrix([])
+                });
+        }, [matrixSize]);
+
+        // Function to handle the form submission
+        const handleFormSubmit = (event) => {
+            setResultMatrix([])
+            event.preventDefault();
+
+            // Get the form data
+            const formData = new FormData(event.target);
+            const size = matrixSize;
+            const matrices = [
+                formData.getAll('matrix1[]').map(Number),
+                formData.getAll('matrix2[]').map(Number)
+            ];
+
+            // Update the state variables
+            setMatrixSize(size);
+            setInputMatrices(matrices);
+            setDataSourceInput(true);
+
+            // Multiply matrices
+            const payload = new MatrixPayload(formData.getAll('matrix1[]').map(Number), formData.getAll('matrix2[]').map(Number), threadCount.valueOf());
+            console.log("Matrix 1")
+            console.log(formData.getAll('matrix1[]').map(Number))
+            console.log("Matrix 2")
+            console.log(formData.getAll('matrix2[]').map(Number))
+            fetch('http://127.0.0.1:8080/multiply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // output matrix result data on the screen
+                    setResultMatrix(data);
+                    console.log(data);
+                });
+        };
+
+        return (
+
+            <div>
+                <button onClick={() => {
+                    fetch('http://127.0.0.1:8080/' + matrixSize.valueOf())
+                        .then(response => response.json())
+                        .then(data => {
+                            setMatrices(data);
+                            setDataSourceInput(false);
+                            setResultMatrix([])
+                        })
+                }}>Get Matrices from Java
+                </button>
+
+                <button onClick={() => {
+                    setDataSourceInput(true);
+                    setResultMatrix([]);
+                }}>Manually input Matrices
+                </button>
+                <br></br>
+                <br></br>
+
+                <label>
+                    Size:
+                    <input type="number" name="size" min="1" max="500" defaultValue={matrixSize}
+                           onChange={(e) => {
+                               console.log(e.target.value);
+                               setMatrixSize(e.target.value);
+                               setResultMatrix([])
+                           }}/>
+                </label>
+                <br/> <label>
+                Thread count:
+                <input type="number" name="size" min="1" max="10" defaultValue={threadCount}
+                       onChange={(e) => {
+                           console.log("New thread count : " + e.target.value);
+                           setThreadCount(e.target.value);
+                           setResultMatrix([])
+                       }}/>
+            </label>
+                <br/>
+
+                {dataSourceInput && <form onSubmit={handleFormSubmit}>
+                    <h2>Input Matrices</h2>
+                    {Array.from({length: 2}, (_, i) => (
+                        <div key={i + "_matrix"}>
+                            <h2>Matrix {i + 1}</h2>
+                            {Array.from({length: matrixSize}, (_, rowIndex) => (
+                                <div key={i + "_matrix_row_" + rowIndex}>
+                                    {Array.from({length: matrixSize}, (_, columnIndex) => (
+                                        <label key={columnIndex + "_for_matrix_" + i}>
+                                            <input type="number" name={`matrix${i + 1}[]`} required/>
+                                        </label>
+                                    ))}
+                                    <br/>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                    <input type="submit" value="Submit"/>
+                </form>}
+
+                {matrices.length > 0 && !dataSourceInput &&
+                    matrices.map((matrix, matrixIndex) => (
+                        <div key={matrixIndex}>
+                            <h2>Matrix {matrixIndex + 1}</h2>
+                            <table>
+                                <tbody>
+                                {matrix.map((row, rowIndex) => (
+                                    <tr key={rowIndex}>
+                                        {row.map((item, itemIndex) => (
+                                            <td key={itemIndex}>{item}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))
+                }
+                {!dataSourceInput && <button onClick={
+                    () => {
+                        setResultMatrix([])
+                        console.log("Multiply Matrices")
+
+                        const payload = new MatrixPayload(matrices[0], matrices[1], threadCount.valueOf());
+                        fetch('http://127.0.0.1:8080/multiply', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(payload),
+
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error("HTTP error " + response.status);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // output matrix result data on the screen
+                                setResultMatrix(data);
+
+                                console.log(data);
+                            });
+
+                    }
+                }>Multiply Matrices
+                </button>}
+                {resultMatrix.length > 0 && (
+                    <div>
+                        <h2>Result Matrix</h2>
+                        <table>
+                            <tbody>
+                            {resultMatrix.map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                    {row.map((item, itemIndex) => (
+                                        <td key={itemIndex}>{item}</td>
+                                    ))}
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    const container = document.getElementById('mydiv');
+    const root = ReactDOM.createRoot(container);
+    root.render(<Hello/>)
+</script>
+
 </body>
 </html>

@@ -125,7 +125,7 @@ public class FoxAlgorithm {
     }
 
 
-    public long run(boolean print) {
+    public int[][] run(boolean print) {
         if (print) System.out.println("\n Fox Algorithm:\n");
         long startTime = System.currentTimeMillis();
         final int[][] result = algorithm();
@@ -136,7 +136,7 @@ public class FoxAlgorithm {
             printResult(resultMatrix, time);
         }
 
-        return time;
+        return result;
     }
 
 }
